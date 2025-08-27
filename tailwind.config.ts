@@ -51,28 +51,17 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				sidebar: {
+					DEFAULT: 'hsl(var(--sidebar-background))',
+					foreground: 'hsl(var(--sidebar-foreground))',
+					primary: 'hsl(var(--sidebar-primary))',
+					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+					accent: 'hsl(var(--sidebar-accent))',
+					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+					border: 'hsl(var(--sidebar-border))',
+					ring: 'hsl(var(--sidebar-ring))'
 				}
-			},
-			backgroundImage: {
-				'music-gradient': 'var(--music-gradient)'
-			},
-			backgroundColor: {
-				'glass': 'var(--glass-bg)',
-				'player': 'var(--player-bg)',
-				'hover': 'var(--hover-bg)'
-			},
-			borderColor: {
-				'glass': 'var(--glass-border)'
-			},
-			boxShadow: {
-				'music-glow': 'var(--music-glow)',
-				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
-			},
-			backdropBlur: {
-				'glass': '10px'
-			},
-			transition: {
-				'smooth': 'var(--transition-smooth)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
