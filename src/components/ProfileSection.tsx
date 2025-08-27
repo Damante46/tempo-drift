@@ -2,6 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Settings, LogOut, Music, Heart, ListMusic } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileSectionProps {
   userPlaylists: any[];
@@ -9,19 +13,69 @@ interface ProfileSectionProps {
 }
 
 export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProps) => {
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+  const [userPlaylistsData, setUserPlaylistsData] = useState<any[]>([]);
+  const [likedSongsData, setLikedSongsData] = useState<any[]>([]);
+
   const handleLogin = () => {
-    // This will be implemented with Supabase
-    console.log('Login functionality requires Supabase integration');
+    navigate('/auth');
   };
 
   const handleSignup = () => {
-    // This will be implemented with Supabase
-    console.log('Signup functionality requires Supabase integration');
+    navigate('/auth');
   };
 
-  // Mock user for demonstration
-  const isLoggedIn = false;
-  const user = null;
+  // Fetch user profile and data when user is logged in
+  useEffect(() => {
+    if (user) {
+      const fetchUserData = async () => {
+        // Fetch profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profileData) {
+          setProfile(profileData);
+        }
+
+        // Fetch user playlists
+        const { data: playlistsData } = await supabase
+          .from('playlists')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (playlistsData) {
+          setUserPlaylistsData(playlistsData);
+        }
+
+        // Fetch liked songs
+        const { data: likedData } = await supabase
+          .from('liked_songs')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (likedData) {
+          setLikedSongsData(likedData);
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [user]);
+
+  const isLoggedIn = !!user;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return (
@@ -42,12 +96,6 @@ export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProp
             <Button onClick={handleLogin} variant="outline" className="w-full" size="lg">
               Log In
             </Button>
-            
-            <div className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                To enable authentication and user features, connect your project to Supabase.
-              </p>
-            </div>
           </CardContent>
         </Card>
 
@@ -96,12 +144,16 @@ export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProp
     <div className="space-y-6">
       <div className="flex items-center gap-6">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={user?.avatar} />
-          <AvatarFallback className="text-2xl">JD</AvatarFallback>
+          <AvatarImage src={profile?.avatar_url} />
+          <AvatarFallback className="text-2xl">
+            {profile?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+          </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-3xl font-bold">John Doe</h1>
-          <p className="text-muted-foreground">Music Lover</p>
+          <h1 className="text-3xl font-bold">
+            {profile?.display_name || profile?.username || 'Music Lover'}
+          </h1>
+          <p className="text-muted-foreground">{user?.email}</p>
         </div>
       </div>
 
@@ -114,7 +166,7 @@ export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{userPlaylists.length}</p>
+            <p className="text-3xl font-bold">{userPlaylistsData.length}</p>
             <p className="text-sm text-muted-foreground">Created playlists</p>
           </CardContent>
         </Card>
@@ -127,7 +179,7 @@ export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{likedSongs.length}</p>
+            <p className="text-3xl font-bold">{likedSongsData.length}</p>
             <p className="text-sm text-muted-foreground">Favorite tracks</p>
           </CardContent>
         </Card>
@@ -151,7 +203,7 @@ export const ProfileSection = ({ userPlaylists, likedSongs }: ProfileSectionProp
           <Settings className="h-4 w-4" />
           Settings
         </Button>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2" onClick={signOut}>
           <LogOut className="h-4 w-4" />
           Log Out
         </Button>
